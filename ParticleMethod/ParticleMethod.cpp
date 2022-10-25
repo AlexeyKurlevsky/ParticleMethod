@@ -3,7 +3,13 @@
 
 #include <iostream>
 #include "Particle.h"
+#include <fstream>
+
 using namespace std;
+
+//ofstream outputFile;
+//ofstream fs;
+//std::string filename = "test.csv";
 
 int main()
 {
@@ -17,16 +23,22 @@ int main()
     double F = Force(a1.r, a2.r);
     int time = 1000;
     double dt = 0.01;
+    fstream fout;
+    fout.open("test.csv");
 
     for (int t = 0; t < time; t++) {
         ForceCalculated(particles);
         SpeedCalculated(particles, dt);
         CoordinateCalculated(particles, dt);
 
-        cout << "Coordinate a1.x= " << a1.r.x << endl;
-        cout << "Coordinate a1.y= " << a1.r.y << endl;
-        cout << "Coordinate a2.x= " << a2.r.x << endl;
-        cout << "Coordinate a2.y= " << a2.r.y << endl;
+
+        fout << particles[0].r.x << "," << particles[0].r.y << "," << particles[1].r.x << "," << particles[1].r.y << std::endl;
+
+        cout << "Coordinate a1.x= " << particles[0].r.x << endl;
+        cout << "Coordinate a1.y= " << particles[0].r.y << endl;
+        cout << "Coordinate a2.x= " << particles[1].r.x << endl;
+        cout << "Coordinate a2.y= " << particles[1].r.y << endl;
+        cout << "Force = " << F << endl;
 
     }
 }

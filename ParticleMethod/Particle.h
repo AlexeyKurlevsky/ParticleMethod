@@ -12,10 +12,16 @@ public:
 	Vector2d summaryForce;
 	Vector2d r, v;
 
+	Particle() {
+		r.resetToZero();
+		v.resetToZero();
+		summaryForce.resetToZero();
+	}
+
 };
 
 double Force(Vector2d r1, Vector2d r2);
 
-void ForceCalculated(vector<Particle> particles);
-void SpeedCalculated(vector<Particle> particles, double dt);
-void CoordinateCalculated(vector<Particle> particles, double dt);
+void ForceCalculated(vector<Particle> & particles);
+void SpeedCalculated(vector<Particle> & particles, double dt);
+void CoordinateCalculated(vector<Particle> & particles, double dt);

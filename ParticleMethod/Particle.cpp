@@ -2,12 +2,12 @@
 
 double Force(Vector2d r1, Vector2d r2) {
 
-	double c = 100, d = 1;
-	double F = c * ((r1 - r2).length() - d);
+	double c = 0.1, d = 1;
+	double F = - c * ((r2 - r1).length() - d);
 	return F;
 }
 
-void ForceCalculated(vector<Particle> particles) {
+void ForceCalculated(vector<Particle> & particles) {
 	for (int i = 0; i < particles.size(); i++) {
 		particles[i].summaryForce.resetToZero();
 		for (int j = 0; j < particles.size(); j++) {
@@ -24,14 +24,14 @@ void ForceCalculated(vector<Particle> particles) {
 
 }
 
-void SpeedCalculated(vector<Particle> particles, double dt) {
+void SpeedCalculated(vector<Particle> & particles, double dt) {
 	for (int i = 0; i < particles.size(); i++) {
 		particles[i].v = particles[i].v + dt * particles[i].summaryForce / particles[i].m;
 	}
 }
 
-void CoordinateCalculated(vector<Particle> particles, double dt) {
+void CoordinateCalculated(vector<Particle> & particles, double dt) {
 	for (int i = 0; i < particles.size(); i++) {
-		particles[i].r = particles[i].r + dt * particles[i].summaryForce;
+		particles[i].r = particles[i].r + dt * particles[i].v;
 	}
 }
