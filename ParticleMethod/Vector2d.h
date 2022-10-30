@@ -22,7 +22,7 @@ public:
 	}
 };
 
-static Vector2d operator -(Vector2d r1, Vector2d r2) {
+static Vector2d operator - (Vector2d r1, Vector2d r2) {
 	Vector2d result;
 
 	result.x = r1.x - r2.x;
@@ -32,7 +32,7 @@ static Vector2d operator -(Vector2d r1, Vector2d r2) {
 	return result;
 }
 
-static Vector2d operator *(double f, Vector2d r2) {
+static Vector2d operator * (double f, Vector2d r2) {
 	Vector2d result;
 
 	result.x = f*r2.x;
@@ -41,7 +41,7 @@ static Vector2d operator *(double f, Vector2d r2) {
 	return result;
 }
 
-static Vector2d operator +(Vector2d r1, Vector2d r2) {
+static Vector2d operator + (Vector2d r1, Vector2d r2) {
 	Vector2d result;
 
 	result.x = r1.x + r2.x;
@@ -50,7 +50,7 @@ static Vector2d operator +(Vector2d r1, Vector2d r2) {
 	return result;
 }
 
-static Vector2d operator /(Vector2d r1, double m) {
+static Vector2d operator / (Vector2d r1, double m) {
 	Vector2d result;
 
 	result.x = r1.x/m;

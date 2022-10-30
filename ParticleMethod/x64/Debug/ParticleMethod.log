@@ -1,4 +1,9 @@
 ﻿  Particle.cpp
 D:\СProject\ParticleMethod\ParticleMethod\Particle.h(2,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
 D:\СProject\ParticleMethod\ParticleMethod\Particle.h(5,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
+  ParticleMethod.cpp
+D:\СProject\ParticleMethod\ParticleMethod\Particle.h(2,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
+D:\СProject\ParticleMethod\ParticleMethod\Particle.h(5,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
+  Vector2d.cpp
+  Создание кода...
   ParticleMethod.vcxproj -> D:\СProject\ParticleMethod\x64\Debug\ParticleMethod.exe

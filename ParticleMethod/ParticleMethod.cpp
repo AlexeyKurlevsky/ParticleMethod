@@ -16,6 +16,7 @@ int main()
     Particle a1, a2;
     a1.r = Vector2d(0, 0);
     a2.r = Vector2d(1.1, 0);
+
     vector<Particle> particles;
     particles.push_back(a1);
     particles.push_back(a2);
@@ -23,23 +24,27 @@ int main()
     double F = Force(a1.r, a2.r);
     int time = 1000;
     double dt = 0.01;
-    fstream fout;
-    fout.open("test.csv");
+
+    std::ofstream myfile;
+    myfile.open("example1.csv");
+
 
     for (int t = 0; t < time; t++) {
-        ForceCalculated(particles);
-        SpeedCalculated(particles, dt);
-        CoordinateCalculated(particles, dt);
+        ForceCalculate(particles);
+        SpeedCalculate(particles, dt);
+        CoordinateCalculate(particles, dt);
 
-
-        fout << particles[0].r.x << "," << particles[0].r.y << "," << particles[1].r.x << "," << particles[1].r.y << std::endl;
-
-        cout << "Coordinate a1.x= " << particles[0].r.x << endl;
-        cout << "Coordinate a1.y= " << particles[0].r.y << endl;
-        cout << "Coordinate a2.x= " << particles[1].r.x << endl;
-        cout << "Coordinate a2.y= " << particles[1].r.y << endl;
-        cout << "Force = " << F << endl;
+        /* cout << "Coordinate a1.r.x " << particles[0].r.x << endl;
+         cout << "Coordinate a1.r.y " << particles[0].r.y << endl;
+         cout << "Coordinate a2.r.x " << particles[1].r.x << endl;
+         cout << "Coordinate a2.r.y " << particles[1].r.y << endl;
+         cout << "Force = " << F << endl;
+ */
+        myfile << particles[0].r.x << "," << particles[0].r.y << "," << particles[1].r.x << "," << particles[1].r.y << "\n";
 
     }
+
+    myfile.close();
+    return 0;
 }
 

@@ -21,7 +21,6 @@ public:
 };
 
 double Force(Vector2d r1, Vector2d r2);
-
-void ForceCalculated(vector<Particle> & particles);
-void SpeedCalculated(vector<Particle> & particles, double dt);
-void CoordinateCalculated(vector<Particle> & particles, double dt);
+void ForceCalculate(vector<Particle>& particles);
+void SpeedCalculate(vector<Particle>& particles, double dt);
+void CoordinateCalculate(vector<Particle>& particles, double dt);
