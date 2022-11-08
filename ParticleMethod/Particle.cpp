@@ -5,7 +5,6 @@ double Force(Vector2d r1, Vector2d r2) {
 	double c = 0.1, d = 1;
 	double F = -c * ((r2 - r1).length() - d);
 
-
 	return F;
 }
 

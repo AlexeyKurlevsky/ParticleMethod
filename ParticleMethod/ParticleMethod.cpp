@@ -7,25 +7,21 @@
 
 using namespace std;
 
-//ofstream outputFile;
-//ofstream fs;
-//std::string filename = "test.csv";
-
 int main()
 {
-    Particle a1, a2, a3;
+    Particle a1, a2, a3, a4;
     double lenghtX, lenghtY, temp_x=0, temp_y=0;
     int numParticleX, numParticleY;
-    lenghtX = 1;
-    lenghtY = 5;
+    lenghtX = 10;
+    lenghtY = 10;
     numParticleX = 10;
-    numParticleY = 11;
+    numParticleY = 10;
 
     a1.r = Vector2d(0, 0);
     a2.r = Vector2d(1.1, 0);
 
     vector<Particle> particles_mesh;
-    particles_mesh.push_back(a3);
+
     for (int i = 0; i < numParticleX; i++) {
         double coordX = i * lenghtX / numParticleX;
         for (int j = 0; j < numParticleY; j++) {
@@ -41,15 +37,21 @@ int main()
             }
         }
     }
+    
+    int numParticleBullet = 100;
 
-    cout << particles_mesh.size() << endl;
-    vector<Particle> particles;
-    particles.push_back(a1);
-    particles.push_back(a2);
+    for (int i = 0; i < numParticleBullet; i++) {
+        double rand_x = -1+2*(float)rand() / RAND_MAX;
+        double rand_y = -1+2*(float)rand() / RAND_MAX;
+        double origin_dist = rand_x * rand_x + rand_y * rand_y;
+        if (origin_dist <= 1)
+            a4.r = Vector2d(rand_x+ lenghtX*1.5, rand_y+ lenghtY/2);
+            a4.v= Vector2d(1, 0);
+            particles_mesh.push_back(a4);
+    }
 
-    double F = Force(a1.r, a2.r);
     int time = 1000;
-    double dt = 0.01;
+    double dt = 0.0001;
 
     std::ofstream myfile;
     myfile.open("D:\\plot\\mesh.csv");
@@ -57,24 +59,24 @@ int main()
     for (int i = 0; i < particles_mesh.size(); i++) {
         myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
     }
+    myfile.close();
 
+    myfile.open("D:\\plot\\res.csv");
 
     for (int t = 0; t < time; t++) {
-        ForceCalculate(particles);
-        SpeedCalculate(particles, dt);
-        CoordinateCalculate(particles, dt);
-
-        /* cout << "Coordinate a1.r.x " << particles[0].r.x << endl;
-         cout << "Coordinate a1.r.y " << particles[0].r.y << endl;
-         cout << "Coordinate a2.r.x " << particles[1].r.x << endl;
-         cout << "Coordinate a2.r.y " << particles[1].r.y << endl;
-         cout << "Force = " << F << endl;
- */
-        //myfile << particles[0].r.x << "," << particles[0].r.y << "," << particles[1].r.x << "," << particles[1].r.y << "\n";
-
+        ForceCalculate(particles_mesh);
+        SpeedCalculate(particles_mesh, dt);
+        CoordinateCalculate(particles_mesh, dt);
+        
+        if (t == 200) {
+            for (int i = 0; i < particles_mesh.size(); i++) {
+                myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
+            }
+            myfile.close();
+        }
+      
     }
 
-    //myfile.close();
     return 0;
 }
 
