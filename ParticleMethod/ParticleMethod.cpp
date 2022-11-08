@@ -37,21 +37,37 @@ int main()
             }
         }
     }
-    
-    int numParticleBullet = 100;
-
-    for (int i = 0; i < numParticleBullet; i++) {
-        double rand_x = -1+2*(float)rand() / RAND_MAX;
-        double rand_y = -1+2*(float)rand() / RAND_MAX;
-        double origin_dist = rand_x * rand_x + rand_y * rand_y;
-        if (origin_dist <= 1)
-            a4.r = Vector2d(rand_x+ lenghtX*1.5, rand_y+ lenghtY/2);
-            a4.v= Vector2d(1, 0);
-            particles_mesh.push_back(a4);
+    ////circle bullet
+    //int numParticleBullet = 100;
+    //for (int i = 0; i < numParticleBullet; i++) {
+    //    double rand_x = -1+2*(float)rand() / RAND_MAX;
+    //    double rand_y = -1+2*(float)rand() / RAND_MAX;
+    //    double origin_dist = rand_x * rand_x + rand_y * rand_y;
+    //    if (origin_dist <= 1)
+    //        a4.r = Vector2d(rand_x+ lenghtX*1.5, rand_y+ lenghtY/2);
+    //        a4.v= Vector2d(0, 0);
+    //        particles_mesh.push_back(a4);
+    //}
+    int numParticleBullet = 10;
+    a4.r = Vector2d(lenghtX * 1.5, lenghtY / 2);
+    a4.v = Vector2d(-1, 0);
+    particles_mesh.push_back(a4);
+    for (int i = 1; i < numParticleBullet; i++) {
+        double coordX = i * lenghtX / numParticleX;
+        double coordY = lenghtY / numParticleY;
+        a4.r = Vector2d(lenghtX*1.5+ coordX, coordY+lenghtY/2);
+        a4.v = Vector2d(-1, 0);
+        particles_mesh.push_back(a4);
+        a4.r = Vector2d(lenghtX * 1.5 + coordX, lenghtY / 2 - coordY);
+        a4.v = Vector2d(-1, 0);
+        particles_mesh.push_back(a4);
+        a4.r = Vector2d(lenghtX * 1.5 + coordX, lenghtY / 2);
+        a4.v = Vector2d(-1, 0);
+        particles_mesh.push_back(a4);
     }
 
     int time = 1000;
-    double dt = 0.0001;
+    double dt = 0.01;
 
     std::ofstream myfile;
     myfile.open("D:\\plot\\mesh.csv");
@@ -67,15 +83,14 @@ int main()
         ForceCalculate(particles_mesh);
         SpeedCalculate(particles_mesh, dt);
         CoordinateCalculate(particles_mesh, dt);
-        
-        if (t == 200) {
-            for (int i = 0; i < particles_mesh.size(); i++) {
+        if (t == 900) {
+            for (int i=0; i < particles_mesh.size(); i++) {
                 myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
             }
-            myfile.close();
         }
-      
+          
     }
+    myfile.close();
 
     return 0;
 }
