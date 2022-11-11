@@ -66,7 +66,7 @@ int main()
         particles_mesh.push_back(a4);
     }
 
-    int time = 1000;
+    int time = 20;
     double dt = 0.01;
 
     std::ofstream myfile;
@@ -79,11 +79,13 @@ int main()
 
     myfile.open("D:\\plot\\res.csv");
 
-    for (int t = 0; t < time; t++) {
+    for (double t = 0; t < time; t += dt) {
         ForceCalculate(particles_mesh);
         SpeedCalculate(particles_mesh, dt);
         CoordinateCalculate(particles_mesh, dt);
-        if (t == 900) {
+ 
+        if (abs(t - 10) < 0.000001) {
+            cout << "t = " << t << endl;
             for (int i=0; i < particles_mesh.size(); i++) {
                 myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
             }
