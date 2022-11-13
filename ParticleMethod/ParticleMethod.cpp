@@ -4,8 +4,25 @@
 #include <iostream>
 #include "Particle.h"
 #include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <algorithm>
 
 using namespace std;
+
+string ReplaceExclamation(string text)
+{
+    string newText = text;
+    int i, len = text.size();
+
+    for (i = 0; i < len + 1; i++)
+    {
+
+        if (text[i] == '.')
+            newText[i] = '_';
+    }
+    return newText;
+}
 
 int main()
 {
@@ -37,17 +54,7 @@ int main()
             }
         }
     }
-    ////circle bullet
-    //int numParticleBullet = 100;
-    //for (int i = 0; i < numParticleBullet; i++) {
-    //    double rand_x = -1+2*(float)rand() / RAND_MAX;
-    //    double rand_y = -1+2*(float)rand() / RAND_MAX;
-    //    double origin_dist = rand_x * rand_x + rand_y * rand_y;
-    //    if (origin_dist <= 1)
-    //        a4.r = Vector2d(rand_x+ lenghtX*1.5, rand_y+ lenghtY/2);
-    //        a4.v= Vector2d(0, 0);
-    //        particles_mesh.push_back(a4);
-    //}
+
     int numParticleBullet = 10;
     a4.r = Vector2d(lenghtX * 1.5, lenghtY / 2);
     a4.v = Vector2d(-1, 0);
@@ -69,30 +76,30 @@ int main()
     int time = 20;
     double dt = 0.01;
 
-    std::ofstream myfile;
-    myfile.open("D:\\plot\\mesh.csv");
+    ofstream myfile;
+    string FILE_NAME = ".\\data\\mesh";
 
-    for (int i = 0; i < particles_mesh.size(); i++) {
-        myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
-    }
-    myfile.close();
-
-    myfile.open("D:\\plot\\res.csv");
-
-    for (double t = 0; t < time; t += dt) {
+    for (double t = 0; t <= time; t += dt) {
         ForceCalculate(particles_mesh);
         SpeedCalculate(particles_mesh, dt);
         CoordinateCalculate(particles_mesh, dt);
- 
-        if (abs(t - 10) < 0.000001) {
-            cout << "t = " << t << endl;
-            for (int i=0; i < particles_mesh.size(); i++) {
-                myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
-            }
+
+        stringstream stream;
+        stream << fixed << setprecision(2) << t;
+        string t_str = stream.str();
+        string t_new = ReplaceExclamation(t_str);
+        string newFileName = FILE_NAME + t_new + ".csv";
+   /*     cout << newFileName << endl;*/
+        
+        myfile.open(newFileName);
+
+        for (int i=0; i < particles_mesh.size(); i++) {
+            myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
         }
-          
+
+        myfile.close();
     }
-    myfile.close();
+ 
 
     return 0;
 }

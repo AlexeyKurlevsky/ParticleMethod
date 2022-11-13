@@ -1,4 +1,5 @@
 ﻿  ParticleMethod.cpp
 D:\СProject\ParticleMethod\ParticleMethod\Particle.h(2,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
 D:\СProject\ParticleMethod\ParticleMethod\Particle.h(5,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
+D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(16,29): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
   ParticleMethod.vcxproj -> D:\СProject\ParticleMethod\x64\Debug\ParticleMethod.exe
