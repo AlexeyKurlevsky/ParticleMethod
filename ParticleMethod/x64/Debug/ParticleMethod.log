@@ -5,4 +5,5 @@ D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(18,29): warning C4
 D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(96,56): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
 D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(97,62): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
 D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(99,46): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+  LINK : не найден или не выполнена сборка D:\СProject\ParticleMethod\x64\Debug\ParticleMethod.exe при последней инкрементной компоновке; выполняется полная компоновка
   ParticleMethod.vcxproj -> D:\СProject\ParticleMethod\x64\Debug\ParticleMethod.exe
