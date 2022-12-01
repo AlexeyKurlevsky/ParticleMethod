@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <chrono>
 
 using namespace std;
 
@@ -26,16 +27,16 @@ string ReplaceExclamation(string text)
 
 int main()
 {
-    Particle a1, a2, a3, a4;
-    double lenghtX, lenghtY, temp_x=0, temp_y=0;
+    Particle a3, a4;
+    double lenghtX, lenghtY;
     int numParticleX, numParticleY;
+    int numParticleBullet;
     lenghtX = 10;
     lenghtY = 10;
     numParticleX = 10;
     numParticleY = 10;
-
-    a1.r = Vector2d(0, 0);
-    a2.r = Vector2d(1.1, 0);
+    numParticleBullet = 10;
+    auto begin = std::chrono::high_resolution_clock::now();
 
     vector<Particle> particles_mesh;
 
@@ -55,7 +56,6 @@ int main()
         }
     }
 
-    int numParticleBullet = 10;
     a4.r = Vector2d(lenghtX * 1.5, lenghtY / 2);
     a4.v = Vector2d(-1, 0);
     particles_mesh.push_back(a4);
@@ -77,28 +77,38 @@ int main()
     double dt = 0.01;
 
     ofstream myfile;
-    string FILE_NAME = ".\\data\\mesh";
+    string FILE_NAME = ".\\data_plot\\mesh";
+    int cnt = 0;
 
     for (double t = 0; t <= time; t += dt) {
+        cnt++;
         ForceCalculate(particles_mesh);
         SpeedCalculate(particles_mesh, dt);
         CoordinateCalculate(particles_mesh, dt);
 
-        stringstream stream;
-        stream << fixed << setprecision(2) << t;
-        string t_str = stream.str();
-        string t_new = ReplaceExclamation(t_str);
-        string newFileName = FILE_NAME + t_new + ".csv";
-   /*     cout << newFileName << endl;*/
-        
-        myfile.open(newFileName);
+        if (cnt % 100 == 0) {
+            stringstream stream;
+            stream << fixed << setprecision(2) << t;
+            string t_str = stream.str();
+            string t_new = ReplaceExclamation(t_str);
+            string newFileName = FILE_NAME + t_new + ".csv";
 
-        for (int i=0; i < particles_mesh.size(); i++) {
-            myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
+            myfile.open(newFileName);
+
+            for (int i = 0; i < particles_mesh.size(); i++) {
+                myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
+            }
+
+            myfile.close();
+
         }
-
-        myfile.close();
+        
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+
+    printf("Time measured: %.3f seconds.\n", elapsed.count() * 1e-9);
  
 
     return 0;
