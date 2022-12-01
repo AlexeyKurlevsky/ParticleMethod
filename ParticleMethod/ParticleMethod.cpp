@@ -26,12 +26,14 @@ string ReplaceExclamation(string text)
     return newText;
 }
 
+
 int main(int argc, char* argv[])
 {   
     Particle a3, a4;
+    vector<Particle> particles_calc_recv;
     double lenghtX, lenghtY;
     int numParticleX, numParticleY;
-    int numParticleBullet = 1;
+    int numParticleBullet = 10;
     int rank, size;
     int send_size_tag = 0;
     int send_particle_calc_tag = 1;
@@ -40,10 +42,10 @@ int main(int argc, char* argv[])
     double dt = 0.01;
     double startwtime = 0.0;
     double endwtime;
-    lenghtX = 3;
-    lenghtY = 3;
-    numParticleX = 3;
-    numParticleY = 3;
+    lenghtX = 10;
+    lenghtY = 10;
+    numParticleX = 10;
+    numParticleY = 10;
 
 
     MPI_Status status;
@@ -55,8 +57,8 @@ int main(int argc, char* argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if (rank == 0) {
-        vector<Particle> particles_main;
         vector<Particle> particles_mesh;
+        //Генерируем сетку на главном процессоре
         startwtime = MPI_Wtime();
         for (int i = 0; i < numParticleX; i++) {
             double coordX = i * lenghtX / numParticleX;
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
                 }
             }
         }
-
+        //Добавляем пулю
         a4.r = Vector2d(lenghtX * 1.5, lenghtY / 2);
         a4.v = Vector2d(-1, 0);
         particles_mesh.push_back(a4);
@@ -90,68 +92,73 @@ int main(int argc, char* argv[])
             a4.v = Vector2d(-1, 0);
             particles_mesh.push_back(a4);
         }
-        cout << "size mesh = " << particles_mesh.size() << endl;
-        //Выделяем частицы для главного процессора
-        for (int i = rank * particles_mesh.size() / size; i < (rank + 1) * particles_mesh.size() / size; i++) {
-            particles_main.push_back(particles_mesh[i]);
-        }
-        
-        for (double t = 0; t <= time; t += dt) {
-            ForceCalculate(particles_main);
-            SpeedCalculate(particles_main, dt);
-            CoordinateCalculate(particles_main, dt);
-        }
-
-        for (int rank_i = 1; rank_i < size; rank_i++) {
-            //Выделяем частицы для остальных процессоров
-            vector<Particle> particles_calc;
-            vector<Particle> particles_ready;
-            for (int j = rank_i * particles_mesh.size() / size; j < (rank_i + 1) * particles_mesh.size() / size; j++) {
-                particles_calc.push_back(particles_mesh[j]);
-            }
-            int size_send = particles_calc.size();
-            //Отправляем размер массива
-            MPI_Send(&size_send, 1, MPI_INT, rank_i, send_size_tag, MPI_COMM_WORLD);
-            //Отправляем массив для рассчета
-            MPI_Send(&particles_calc[0], particles_calc.size(), MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD);
-            //Меняем размер массива. Особенности передачи массивов в MPI
-            particles_ready.resize(size_send);
-            MPI_Recv(&particles_ready[0], size_send, MPI_DOUBLE, rank_i, send_particle_ready_tag, MPI_COMM_WORLD, &status);
-            for (int i = 0; i < particles_ready.size(); i++) {
-                particles_main.push_back(particles_ready[i]);
-            }
-        }
-        //TODO не работает запись файла
+        //Считаем минимальный и максмимальный индекс для главного процессора
+        int i_min = rank * particles_mesh.size() / size;
+        int i_max = (rank + 1) * particles_mesh.size() / size;
+        //Объявляем переменную для длины вектора. Далее будем передавать ее другим процессорам
+        int size_send = particles_mesh.size();
+        //Настраиваем запись в файл
         ofstream myfile;
-        string FILE_NAME = ".\\data\\mesh_main.csv";
+        string FILE_NAME = ".\\data_plot\\mesh";
+        int cnt = 0;
 
-        myfile.open(FILE_NAME);
+        for (double t = 0; t <= time; t += dt) {
+            cnt++;
+            //Считаем часть предназначенную для главного процессора
+            ForceCalculate(particles_mesh, i_min, i_max);
+            SpeedCalculate(particles_mesh, dt, i_min, i_max);
+            CoordinateCalculate(particles_mesh, dt, i_min, i_max);
+            //Передаем посчитанные значения другим процессорам
+            for (int rank_i = 1; rank_i < size; rank_i++) {
+                MPI_Send(&size_send, 1, MPI_INT, rank_i, send_size_tag, MPI_COMM_WORLD);
+                //Количество передаваемых значений size_send * 7, так как у каждой частицы 7 переменных
+                MPI_Send(&particles_mesh[0], size_send*7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD);
+            }
+            //Получаем результат с последнего процессора
+            MPI_Recv(&particles_mesh[0], size_send*7, MPI_DOUBLE, size - 1, send_particle_ready_tag, MPI_COMM_WORLD, &status);
+            //Записываем в файл только целые значения для времени
+            if (cnt % 100 == 0) {
+                stringstream stream;
+                stream << fixed << setprecision(2) << t;
+                string t_str = stream.str();
+                string t_new = ReplaceExclamation(t_str);
+                string newFileName = FILE_NAME + t_new + ".csv";
 
-        for (int i = 0; i < particles_main.size(); i++) {
-            myfile << particles_main[i].r.x << "," << particles_main[i].r.y << "\n";
+                myfile.open(newFileName);
+
+                for (int i = 0; i < particles_mesh.size(); i++) {
+                    myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
+                }
+
+                myfile.close();
+
+            }
+
         }
 
-        myfile.close();
-
-        cout << "size main = " << particles_main.size() << endl;
         endwtime = MPI_Wtime();
         cout << "time= " << (endwtime - startwtime) * 1000 << endl;
 
     }
     else {
+        //Принимаем размер вектора, который мы будем получать с главного процессора.
         int size_calc;
         MPI_Recv(&size_calc, 1, MPI_INT, 0, send_size_tag, MPI_COMM_WORLD, &status);
-        vector<Particle> particles_calc_recv;
+        //У вектора, в который будем записывать принимаемые значения, меняем длину. Иначе не получится корректно принять
         particles_calc_recv.resize(size_calc);
-        MPI_Recv(&particles_calc_recv[0], size_calc, MPI_DOUBLE, 0, send_particle_calc_tag, MPI_COMM_WORLD, &status);
 
-         for (double t = 0; t <= time; t += dt) {
-             ForceCalculate(particles_calc_recv);
-             SpeedCalculate(particles_calc_recv, dt);
-             CoordinateCalculate(particles_calc_recv, dt);
-         }
+        int i_min = rank * size_calc / size;
+        int i_max = (rank + 1) * size_calc / size;
+        //Проводим расчет для частиц, выделенных на конкретном процессоре
+        for (double t = 0; t <= time; t += dt) {
+            MPI_Recv(&particles_calc_recv[0], size_calc * 7, MPI_DOUBLE, 0, send_particle_calc_tag, MPI_COMM_WORLD, &status);
+            ForceCalculate(particles_calc_recv, i_min, i_max);
+            SpeedCalculate(particles_calc_recv, dt, i_min, i_max);
+            CoordinateCalculate(particles_calc_recv, dt, i_min, i_max);
+            //Отправляем результат на главный процессор
+            MPI_Send(&particles_calc_recv[0], size_calc * 7, MPI_DOUBLE, 0, send_particle_ready_tag, MPI_COMM_WORLD);
+        }
 
-        MPI_Send(&particles_calc_recv[0], particles_calc_recv.size(), MPI_DOUBLE, 0, send_particle_ready_tag, MPI_COMM_WORLD);
     }
  
     MPI_Finalize();

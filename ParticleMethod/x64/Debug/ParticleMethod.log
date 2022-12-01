@@ -2,9 +2,7 @@
 D:\СProject\ParticleMethod\ParticleMethod\Particle.h(2,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
 D:\СProject\ParticleMethod\ParticleMethod\Particle.h(5,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
 D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(18,29): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(95,9): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(109,13): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(112,50): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(116,123): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(153,125): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(96,56): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(97,62): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(99,46): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
   ParticleMethod.vcxproj -> D:\СProject\ParticleMethod\x64\Debug\ParticleMethod.exe
