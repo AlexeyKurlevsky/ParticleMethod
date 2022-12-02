@@ -113,9 +113,9 @@ int main(int argc, char* argv[])
                 MPI_Send(&size_send, 1, MPI_INT, rank_i, send_size_tag, MPI_COMM_WORLD);
                 //Количество передаваемых значений size_send * 7, так как у каждой частицы 7 переменных
                 MPI_Send(&particles_mesh[0], size_send*7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD);
+                //Получаем результат с последнего процессора
+                MPI_Recv(&particles_mesh[0], size_send * 7, MPI_DOUBLE, size - 1, send_particle_ready_tag, MPI_COMM_WORLD, &status);
             }
-            //Получаем результат с последнего процессора
-            MPI_Recv(&particles_mesh[0], size_send*7, MPI_DOUBLE, size - 1, send_particle_ready_tag, MPI_COMM_WORLD, &status);
             //Записываем в файл только целые значения для времени
             if (cnt % 100 == 0) {
                 stringstream stream;
