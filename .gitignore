@@ -1,6 +1,6 @@
 # Created by .ignore support plugin (hsz.mobi)
-/ParticleMethod/data_plot/
-/x64/Debug/data_plot/
+/ParticleMethod/data_plot/*csv
+/x64/Debug/data_plot/*csv
 .idea/
 ### C++ template
 # Prerequisites
