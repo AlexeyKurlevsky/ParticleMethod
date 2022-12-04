@@ -121,30 +121,38 @@ int main(int argc, char* argv[])
         CoordinateCalculate(particles_mesh, dt, i_min, i_max);
         //Определяем частицы, которые мы будем отправлять
         vector<Particle> particles_send;
-  
         for (int i = i_min; i < i_max; i++) {
             particles_send.push_back(particles_mesh[i]);
         }
-        //Посчитанную часть отправляем главному процессору
-        if (rank != 0) {
-            int size_send = particles_send.size();
-            MPI_Send(&size_send, 1, MPI_INT, 0, send_particle_size_calc_tag, MPI_COMM_WORLD);
-            MPI_Send(&particles_send[0], size_send * 7, MPI_DOUBLE, 0, send_particle_calc_tag, MPI_COMM_WORLD);
+        //Посчитанную часть отправляем всем процессорам
+        for (int rank_i = 0; rank_i < size; rank_i++) {
+            if (rank_i != rank) {
+                int size_send = particles_send.size();
+                MPI_Send(&size_send, 1, MPI_INT, rank_i, send_particle_size_calc_tag, MPI_COMM_WORLD);
+                MPI_Send(&particles_send[0], size_send * 7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD);
+            }
         }
-
-        //На главном процессоре собираем все посчитанные части
-        if (rank == 0) {
-            //Получаем посчитанную часть
-            for (int rank_i = 1; rank_i < size; rank_i++) {
-                vector<Particle> particles_recv;
-                int size_recv;
+        //На каждом процессоре принимаем посчитанную часть
+        for (int rank_i = 0; rank_i < size; rank_i++) {
+            vector<Particle> particles_recv;
+            int size_recv;
+            if (rank_i != rank) {
                 MPI_Recv(&size_recv, 1, MPI_INT, rank_i, send_particle_size_calc_tag, MPI_COMM_WORLD, &status);
                 particles_recv.resize(size_recv);
                 MPI_Recv(&particles_recv[0], size_recv * 7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD, &status);
+                //Добавляем результат, посчитанный на других процессорах, к результату, посчитанному на текущем процессоре
                 for (int j = 0; j < particles_recv.size(); j++) {
                     particles_send.push_back(particles_recv[j]);
                 }
             }
+        }
+        //Переопределяем сетку, чтобы результат, посчитанный на других процессорах, использовался на следующем шаге по времени
+        vector<Particle> particles_mesh;
+        for (int i = 0; i < particles_send.size(); i++) {
+            particles_mesh.push_back(particles_send[i]);
+        }
+
+        if (rank == 0) {
             //Настраиваем запись в файл
             ofstream myfile;
             string FILE_NAME = ".\\data_plot\\mesh";
@@ -158,8 +166,8 @@ int main(int argc, char* argv[])
 
                 myfile.open(newFileName);
 
-                for (int i = 0; i < particles_send.size(); i++) {
-                    myfile << particles_send[i].r.x << "," << particles_send[i].r.y << "\n";
+                for (int i = 0; i < particles_mesh.size(); i++) {
+                    myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
                 }
 
                 myfile.close();
