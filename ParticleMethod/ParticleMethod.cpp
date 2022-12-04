@@ -125,17 +125,17 @@ int main(int argc, char* argv[])
         for (int i = i_min; i < i_max; i++) {
             particles_send.push_back(particles_mesh[i]);
         }
-        //Посчитанную часть отправляем другим процессорам
-        int size_send = particles_send.size();
-        for (int rank_i = 0; rank_i < size; rank_i++) {
-            if (rank_i != rank) {
-                MPI_Send(&size_send, 1, MPI_INT, rank_i, send_particle_size_calc_tag, MPI_COMM_WORLD);
-                MPI_Send(&particles_send[0], size_send * 7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD);
-            }
+        //Посчитанную часть отправляем главному процессору
+        if (rank != 0) {
+            int size_send = particles_send.size();
+            MPI_Send(&size_send, 1, MPI_INT, 0, send_particle_size_calc_tag, MPI_COMM_WORLD);
+            MPI_Send(&particles_send[0], size_send * 7, MPI_DOUBLE, 0, send_particle_calc_tag, MPI_COMM_WORLD);
         }
-        //Получаем посчитанную часть
-        for (int rank_i = 0; rank_i < size; rank_i++) {
-            if (rank_i != rank) {
+
+        //На главном процессоре собираем все посчитанные части
+        if (rank == 0) {
+            //Получаем посчитанную часть
+            for (int rank_i = 1; rank_i < size; rank_i++) {
                 vector<Particle> particles_recv;
                 int size_recv;
                 MPI_Recv(&size_recv, 1, MPI_INT, rank_i, send_particle_size_calc_tag, MPI_COMM_WORLD, &status);
@@ -145,10 +145,6 @@ int main(int argc, char* argv[])
                     particles_send.push_back(particles_recv[j]);
                 }
             }
-        }
-
-        //На главном процессоре собираем все посчитанные части
-        if (rank == 0) {
             //Настраиваем запись в файл
             ofstream myfile;
             string FILE_NAME = ".\\data_plot\\mesh";
