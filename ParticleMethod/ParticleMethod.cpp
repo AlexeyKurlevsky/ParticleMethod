@@ -102,13 +102,14 @@ int main(int argc, char* argv[])
             MPI_Send(&particles_mesh[0], size_mesh * 7, MPI_DOUBLE, rank_i, send_particle_initial_tag, MPI_COMM_WORLD);
         }
     }
-    /*Если процессор не главный, то принимаем с главного процессора сетку*/
-    if (rank != 0) {
+    else {
+        /*Если процессор не главный, то принимаем с главного процессора сетку*/
         int size_mesh_recv;
         MPI_Recv(&size_mesh_recv, 1, MPI_INT, 0, send_initial_size_tag, MPI_COMM_WORLD, &status);
         particles_mesh.resize(size_mesh_recv);
         MPI_Recv(&particles_mesh[0], size_mesh_recv * 7, MPI_DOUBLE, 0, send_particle_initial_tag, MPI_COMM_WORLD, &status);
     }
+    
     /*Считаем минимальный и максмимальный индекс для процессора*/
     int i_min = rank * particles_mesh.size() / size;
     int i_max = (rank + 1) * particles_mesh.size() / size;
@@ -121,6 +122,8 @@ int main(int argc, char* argv[])
         CoordinateCalculate(particles_mesh, dt, i_min, i_max);
         //Определяем частицы, которые мы будем отправлять
         vector<Particle> particles_send;
+        //Определяем массив, в который будем записывать результат
+        vector<Particle> particles_result;
         for (int i = i_min; i < i_max; i++) {
             particles_send.push_back(particles_mesh[i]);
         }
@@ -142,14 +145,21 @@ int main(int argc, char* argv[])
                 MPI_Recv(&particles_recv[0], size_recv * 7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD, &status);
                 //Добавляем результат, посчитанный на других процессорах, к результату, посчитанному на текущем процессоре
                 for (int j = 0; j < particles_recv.size(); j++) {
-                    particles_send.push_back(particles_recv[j]);
+                    particles_result.push_back(particles_recv[j]);
+                }
+            }
+            else
+            {   
+                //Если мы не получаем результат с другого процессора, то записываем посчитанный результат в массив
+                for (int i = i_min; i < i_max; i++) {
+                    particles_result.push_back(particles_mesh[i]);
                 }
             }
         }
         //Переопределяем сетку, чтобы результат, посчитанный на других процессорах, использовался на следующем шаге по времени
-        vector<Particle> particles_mesh;
-        for (int i = 0; i < particles_send.size(); i++) {
-            particles_mesh.push_back(particles_send[i]);
+        particles_mesh.clear();
+        for (int i = 0; i < particles_result.size(); i++) {
+            particles_mesh.push_back(particles_result[i]);
         }
 
         if (rank == 0) {
@@ -163,19 +173,13 @@ int main(int argc, char* argv[])
                 string t_str = stream.str();
                 string t_new = ReplaceExclamation(t_str);
                 string newFileName = FILE_NAME + t_new + ".csv";
-
                 myfile.open(newFileName);
-
                 for (int i = 0; i < particles_mesh.size(); i++) {
                     myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
                 }
-
                 myfile.close();
-        
             }
-
         }
-
     }
 
     if (rank == 0) {
