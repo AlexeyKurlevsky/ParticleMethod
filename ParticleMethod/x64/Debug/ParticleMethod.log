@@ -1,9 +1,2 @@
-﻿  ParticleMethod.cpp
-D:\СProject\ParticleMethod\ParticleMethod\Particle.h(2,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
-D:\СProject\ParticleMethod\ParticleMethod\Particle.h(5,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(18,29): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(97,46): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(114,52): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(115,58): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\СProject\ParticleMethod\ParticleMethod\ParticleMethod.cpp(133,54): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+﻿  LINK : не найден или не выполнена сборка D:\СProject\ParticleMethod\x64\Debug\ParticleMethod.exe при последней инкрементной компоновке; выполняется полная компоновка
   ParticleMethod.vcxproj -> D:\СProject\ParticleMethod\x64\Debug\ParticleMethod.exe

@@ -29,7 +29,7 @@ dir_path_MPI = r".\x64\Debug\data_plot"
 dir_path_no_MPI = r".\ParticleMethod\data_plot"
 fig = plt.figure(figsize=(10, 5))
 file_arr_MPI, frames_arr_MPI = get_file_arr(dir_path_MPI)
-file_arr_no_MPI, frames_arr_no_MPI = get_file_arr(dir_path_MPI)
+file_arr_no_MPI, frames_arr_no_MPI = get_file_arr(dir_path_no_MPI)
 
 def animate_MPI(i):
     fig.clear()
