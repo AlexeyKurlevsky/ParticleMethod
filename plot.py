@@ -63,5 +63,9 @@ ani_no_MPI = animation.FuncAnimation(
     fig, animate_no_MPI, interval=1, frames=frames_arr_no_MPI, save_count=None, cache_frame_data=False
 )
 ani_no_MPI.save("animation_no_MPI.gif", writer="pillow")
-
-
+df_core = pd.read_excel('time.xlsx')
+plt.plot(df_core['core'], df_core['time'])
+plt.xlabel('Количество ядер')
+plt.ylabel('Время, сек')
+plt.grid()
+# plt.show()

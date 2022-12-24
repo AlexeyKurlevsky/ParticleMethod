@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     int send_particle_initial_tag = 1;
     int send_particle_size_calc_tag = 2;
     int send_particle_calc_tag = 3;
-    int time = 20;
+    double time = 20;
     double dt = 0.01;
     double startwtime = 0.0;
     double endwtime;
@@ -111,57 +111,35 @@ int main(int argc, char* argv[])
     }
     
     /*Считаем минимальный и максмимальный индекс для процессора*/
+    int* recvcounts = new int(size);
     int i_min = rank * particles_mesh.size() / size;
     int i_max = (rank + 1) * particles_mesh.size() / size;
-    int cnt = 0;
+
+    for (int rank_i = 0; rank_i < size; rank_i++) {
+        double i_min_recv = rank_i * particles_mesh.size() / size*7;
+        double i_max_recv = (rank_i + 1) * particles_mesh.size() / size*7;
+        recvcounts[rank_i] = i_max_recv - i_min_recv;
+        //cout <<"rank " << rank_i << " recvcounts[rank_i] " << recvcounts[rank_i] << " size " << particles_mesh.size() << endl;
+    }
+
+    int cnt = 0;                 
 
     for (double t = 0; t <= time; t += dt) {
         cnt++;
         ForceCalculate(particles_mesh, i_min, i_max);
         SpeedCalculate(particles_mesh, dt, i_min, i_max);
         CoordinateCalculate(particles_mesh, dt, i_min, i_max);
-        //Определяем частицы, которые мы будем отправлять
-        vector<Particle> particles_send;
-        //Определяем массив, в который будем записывать результат
         vector<Particle> particles_result;
-        for (int i = i_min; i < i_max; i++) {
+        vector<Particle> particles_send;
+        particles_result.resize(particles_mesh.size());
+        particles_send.resize(particles_mesh.size());
+        //cout <<"rank "<< rank << " t = "<< t << " initial " << particles_mesh[100].r.x << endl;
+ /*       for (int i = i_min; i < i_max; i++) {
             particles_send.push_back(particles_mesh[i]);
-        }
-        //Посчитанную часть отправляем всем процессорам
-        for (int rank_i = 0; rank_i < size; rank_i++) {
-            if (rank_i != rank) {
-                int size_send = particles_send.size();
-                MPI_Send(&size_send, 1, MPI_INT, rank_i, send_particle_size_calc_tag, MPI_COMM_WORLD);
-                MPI_Send(&particles_send[0], size_send * 7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD);
-            }
-        }
-        //На каждом процессоре принимаем посчитанную часть
-        for (int rank_i = 0; rank_i < size; rank_i++) {
-            vector<Particle> particles_recv;
-            int size_recv;
-            if (rank_i != rank) {
-                MPI_Recv(&size_recv, 1, MPI_INT, rank_i, send_particle_size_calc_tag, MPI_COMM_WORLD, &status);
-                particles_recv.resize(size_recv);
-                MPI_Recv(&particles_recv[0], size_recv * 7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD, &status);
-                //Добавляем результат, посчитанный на других процессорах, к результату, посчитанному на текущем процессоре
-                for (int j = 0; j < particles_recv.size(); j++) {
-                    particles_result.push_back(particles_recv[j]);
-                }
-            }
-            else
-            {   
-                //Если мы не получаем результат с другого процессора, то записываем посчитанный результат в массив
-                for (int i = i_min; i < i_max; i++) {
-                    particles_result.push_back(particles_mesh[i]);
-                }
-            }
-        }
-        //Переопределяем сетку, чтобы результат, посчитанный на других процессорах, использовался на следующем шаге по времени
-        particles_mesh.clear();
-        for (int i = 0; i < particles_result.size(); i++) {
-            particles_mesh.push_back(particles_result[i]);
-        }
-
+        }*/
+        MPI_Allgather(MPI_IN_PLACE, recvcounts[rank], MPI_DOUBLE, &particles_result[0], recvcounts[rank], MPI_DOUBLE, MPI_COMM_WORLD);
+        //cout << "rank " << rank << " t = " << t << " result " << particles_mesh[100].r.x << endl;
+        
         if (rank == 0) {
             //Настраиваем запись в файл
             ofstream myfile;
