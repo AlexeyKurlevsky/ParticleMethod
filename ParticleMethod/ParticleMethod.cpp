@@ -1,4 +1,4 @@
-﻿// ParticleMethod.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
+// ParticleMethod.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
 //
 
 #include <mpi.h>
@@ -11,6 +11,9 @@
 #include <algorithm>
 
 using namespace std;
+
+// константа параметров (2 компоненты радиуса-вектора, вектора скорости, вектора силы и масса частицы)
+const int c_very_strange_const = 7;
 
 string ReplaceExclamation(string text)
 {
@@ -28,7 +31,7 @@ string ReplaceExclamation(string text)
 
 
 int main(int argc, char* argv[])
-{   
+{
     Particle a3, a4;
     vector<Particle> particles_mesh;
     double lenghtX, lenghtY;
@@ -37,8 +40,6 @@ int main(int argc, char* argv[])
     int rank, size;
     int send_initial_size_tag = 0;
     int send_particle_initial_tag = 1;
-    int send_particle_size_calc_tag = 2;
-    int send_particle_calc_tag = 3;
     int time = 20;
     double dt = 0.01;
     double startwtime = 0.0;
@@ -98,21 +99,39 @@ int main(int argc, char* argv[])
 
         for (int rank_i = 1; rank_i < size; rank_i++) {
             MPI_Send(&size_mesh, 1, MPI_INT, rank_i, send_initial_size_tag, MPI_COMM_WORLD);
-            /*Количество передаваемых значений size_send * 7, так как у каждой частицы 7 переменных*/
-            MPI_Send(&particles_mesh[0], size_mesh * 7, MPI_DOUBLE, rank_i, send_particle_initial_tag, MPI_COMM_WORLD);
+            //Количество передаваемых значений size_send * 7, так как у каждой частицы 7 переменных
+            MPI_Send(&particles_mesh[0], size_mesh * c_very_strange_const, MPI_DOUBLE, rank_i, send_particle_initial_tag, MPI_COMM_WORLD);
         }
     }
     else {
         /*Если процессор не главный, то принимаем с главного процессора сетку*/
         int size_mesh_recv;
-        MPI_Recv(&size_mesh_recv, 1, MPI_INT, 0, send_initial_size_tag, MPI_COMM_WORLD, &status);
+        MPI_Recv(&size_mesh_recv, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         particles_mesh.resize(size_mesh_recv);
-        MPI_Recv(&particles_mesh[0], size_mesh_recv * 7, MPI_DOUBLE, 0, send_particle_initial_tag, MPI_COMM_WORLD, &status);
+        MPI_Recv(&particles_mesh[0], size_mesh_recv * c_very_strange_const, MPI_DOUBLE, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     }
-    
+
+
     /*Считаем минимальный и максмимальный индекс для процессора*/
-    int i_min = rank * particles_mesh.size() / size;
-    int i_max = (rank + 1) * particles_mesh.size() / size;
+    int intCounPerOneProcess = particles_mesh.size() / size;
+    if (particles_mesh.size() % size)
+        intCounPerOneProcess++;
+    //Инициализиурем массивы, в которых будут содержаться количество передаваемых параметров и величина отступа
+    int* rcount = new int[size];
+    int* displs = new int[size];
+    for(int i=0;i<size;i++) {
+        rcount[i] = intCounPerOneProcess * c_very_strange_const;
+        displs[i] = intCounPerOneProcess * i * c_very_strange_const;
+    }
+
+    if (particles_mesh.size() % size) {
+        rcount[size - 1] = (particles_mesh.size() - (size - 1) * intCounPerOneProcess) * c_very_strange_const;
+    }
+
+    int i_min = rank * intCounPerOneProcess;
+    int i_max = (rank + 1) * intCounPerOneProcess;
+    if (i_max > particles_mesh.size())
+        i_max = particles_mesh.size();
     int cnt = 0;
 
     for (double t = 0; t <= time; t += dt) {
@@ -120,45 +139,21 @@ int main(int argc, char* argv[])
         ForceCalculate(particles_mesh, i_min, i_max);
         SpeedCalculate(particles_mesh, dt, i_min, i_max);
         CoordinateCalculate(particles_mesh, dt, i_min, i_max);
-        //Определяем частицы, которые мы будем отправлять
-        vector<Particle> particles_send;
         //Определяем массив, в который будем записывать результат
         vector<Particle> particles_result;
-        for (int i = i_min; i < i_max; i++) {
-            particles_send.push_back(particles_mesh[i]);
-        }
-        //Посчитанную часть отправляем всем процессорам
-        for (int rank_i = 0; rank_i < size; rank_i++) {
-            if (rank_i != rank) {
-                int size_send = particles_send.size();
-                MPI_Send(&size_send, 1, MPI_INT, rank_i, send_particle_size_calc_tag, MPI_COMM_WORLD);
-                MPI_Send(&particles_send[0], size_send * 7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD);
-            }
-        }
-        //На каждом процессоре принимаем посчитанную часть
-        for (int rank_i = 0; rank_i < size; rank_i++) {
-            vector<Particle> particles_recv;
-            int size_recv;
-            if (rank_i != rank) {
-                MPI_Recv(&size_recv, 1, MPI_INT, rank_i, send_particle_size_calc_tag, MPI_COMM_WORLD, &status);
-                particles_recv.resize(size_recv);
-                MPI_Recv(&particles_recv[0], size_recv * 7, MPI_DOUBLE, rank_i, send_particle_calc_tag, MPI_COMM_WORLD, &status);
-                //Добавляем результат, посчитанный на других процессорах, к результату, посчитанному на текущем процессоре
-                for (int j = 0; j < particles_recv.size(); j++) {
-                    particles_result.push_back(particles_recv[j]);
-                }
-            }
-            else
-            {   
-                //Если мы не получаем результат с другого процессора, то записываем посчитанный результат в массив
-                for (int i = i_min; i < i_max; i++) {
-                    particles_result.push_back(particles_mesh[i]);
-                }
-            }
-        }
-        //Переопределяем сетку, чтобы результат, посчитанный на других процессорах, использовался на следующем шаге по времени
+        particles_result.resize(particles_mesh.size());
+        //Отправляем всем процессорам посчитанную часть
+        MPI_Allgatherv(
+                        &particles_mesh[i_min],
+                        (i_max-i_min) * c_very_strange_const,
+                        MPI_DOUBLE,
+                        &particles_result[0],
+                        rcount,
+                        displs,
+                        MPI_DOUBLE, MPI_COMM_WORLD);
+
         particles_mesh.clear();
-        for (int i = 0; i < particles_result.size(); i++) {
+        for (size_t i = 0; i < particles_result.size(); i++) {
             particles_mesh.push_back(particles_result[i]);
         }
 
@@ -166,6 +161,7 @@ int main(int argc, char* argv[])
             //Настраиваем запись в файл
             ofstream myfile;
             string FILE_NAME = ".\\data_plot\\mesh";
+            //string FILE_NAME = "data_plot/mesh";
             //Записываем в файл только целые значения для времени
             if (cnt % 100 == 0) {
                 stringstream stream;
@@ -174,7 +170,7 @@ int main(int argc, char* argv[])
                 string t_new = ReplaceExclamation(t_str);
                 string newFileName = FILE_NAME + t_new + ".csv";
                 myfile.open(newFileName);
-                for (int i = 0; i < particles_mesh.size(); i++) {
+                for (size_t i = 0; i < particles_mesh.size(); i++) {
                     myfile << particles_mesh[i].r.x << "," << particles_mesh[i].r.y << "\n";
                 }
                 myfile.close();
@@ -186,7 +182,7 @@ int main(int argc, char* argv[])
         endwtime = MPI_Wtime();
         cout << "time= " << (endwtime - startwtime) << endl;
     }
- 
+
     MPI_Finalize();
     return 0;
 }
